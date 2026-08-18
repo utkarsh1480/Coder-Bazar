@@ -1,47 +1,23 @@
 import express from 'express';
 import cors  from 'cors'
 import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
 import prisma from "./lib/prisma.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import notFoundHandler from './middlewares/not-found.middleware.js';
+import router from './routes/router.js';
 
 const app = express();
+
 
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(express.json({urlencoded: true}))
+app.use(cookieParser())
 
-app.get("/api/v1/health", (req, res) => {
-  res.json({
-    status: "ok",
-    message: "Coder's Shop API is running",
-  });
-});
+app.use('/api', router);
 
-app.get('/', (req,res) =>{
-    res.end("Hello");
-})
-
-app.get("/health", async (req, res) => {
-  try {
-    console.log("1")
-    await prisma.$queryRaw`SELECT 1`;
-    console.log("2")
-
-    res.json({
-      success: true,
-      message: "API is healthy",
-      database: "connected",
-    });
-  } catch (error) {
-    res.status(503).json({
-      success: false,
-      message: "Service unavailable",
-      database: "disconnected",
-    });
-  }
-});
 
 
 /**
