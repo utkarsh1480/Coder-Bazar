@@ -12,7 +12,7 @@ export function requireAuth(req, res, next) {
         }
 
         const decoded = verifyAccessToken(token);
-
+        console.log(decoded);
         req.user = decoded;
 
         next();

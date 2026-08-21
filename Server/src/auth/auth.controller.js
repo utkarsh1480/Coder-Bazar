@@ -1,12 +1,25 @@
 import { RegisterUserService, loginUserService, getCurrentUserService } from "./auth.service.js";
 import prisma from '../lib/prisma.js'
+import {registerSchema, loginSchema} from './auth.validator.js'
 export async function registerUser(req, res, next) {
   try {
-    const result = await RegisterUserService(req.body ?? {});
+    const result = registerSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: result.error.issues.map((issue) => ({
+          field: issue.path.join("."),
+          message: issue.message,
+        })),
+      });
+    }
+    const data = await RegisterUserService(req.body ?? {});
 
     res.status(201).json({
       success: true,
-      data: result,
+      data: data,
     });
   } catch (error) {
     next(error);
@@ -15,12 +28,24 @@ export async function registerUser(req, res, next) {
 
 export async function login(req, res, next) {
   try {
-    const result = await loginUserService(req.body ?? {});
+    const result = loginSchema.safeParse(req.body);
+     if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: result.error.issues.map((issue) => ({
+          field: issue.path.join("."),
+          message: issue.message,
+        })),
+      });
+    }
 
-    res.cookie("token", result.accessToken)
+    const data = await loginUserService(req.body ?? {});
+
+    res.cookie("token", data.accessToken)
     res.status(200).json({
       success: true,
-      data: result,
+      data: data,
     });
   } catch (error) {
     next(error);

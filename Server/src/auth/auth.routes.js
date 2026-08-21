@@ -3,6 +3,7 @@ import {registerUser, login, getMe, logout} from './auth.controller.js'
 import {requireAuth} from '../middlewares/auth.middleware.js'
 import { } from './auth.controller.js'
 
+
 const authRouter = express.Router();
 
 
