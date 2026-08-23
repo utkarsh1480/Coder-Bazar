@@ -3,6 +3,8 @@ import authRouter from '../auth/auth.routes.js'
 import userRouter from '../user/user.route.js';
 import categoryRouter from '../category/category.route.js';
 import listingRouter from '../listings/listing.route.js';
+import favrouteRouter from '../favorites/favorites.route.js';
+import conversationRouter from '../conversations/conversations.routes.js';
 
 const router = express.Router();
 
@@ -39,5 +41,21 @@ const router = express.Router();
   */
  
  router.use('/listing', listingRouter);
+
+ /**
+  * @route /api/favrourite
+  * @description favourite related routes
+  * @access public 
+  */
+
+ router.use('/favourite', favrouteRouter)
+
+
+ /**
+ * @route /api/conversation/
+ * @description Conversation between user and router 
+ */
+
+ router.use('/conversations', conversationRouter)
 
 export default router;

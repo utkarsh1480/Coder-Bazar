@@ -1,5 +1,6 @@
 import { describe } from "zod/v4/core";
 import prisma from "../lib/prisma.js";
+import { date } from "zod";
 
 
 export async function createListingService(userId, data){
@@ -302,8 +303,9 @@ const listing = await prisma.Listing.findMany({
     },
         category : {
             select :{
-                name : true 
-            },
+                id : true 
+            }
+
         }
     }
 })

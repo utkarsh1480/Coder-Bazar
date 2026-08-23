@@ -65,4 +65,7 @@ listingRouter.delete('/:id',requireAuth ,deleteListingController)
 
 listingRouter.get('/', filterListingController)
 
+
+
+
 export default listingRouter

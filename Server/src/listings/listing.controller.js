@@ -4,9 +4,9 @@ import { createListingService ,
      getListingByIdService,
      updateListingService,
      deleteListingService,
-     filterListingService
+     filterListingService,
     } from './listing.service.js'
-import { createListingSchema , updateListingSchema,filterListingSchema} from './listing.validation.js'
+import { createListingSchema , updateListingSchema,filterListingSchema, paginationValidation} from './listing.validation.js'
 
 
 export async function createListing(req, res, next) {
@@ -121,6 +121,13 @@ const result = filterListingSchema.safeParse(req.query);
 
 const page = Number(req.query.page) || 2;
 const limit = Number(req.query.limit) || 10;
+const paginationresult = paginationValidation.safeParse({page, limit});
+
+if(!paginationresult.success){
+const error = new Error("Please Enter valid pagination Information")
+error.statusCode = 400
+throw error
+}
 
 if(!result.success){
 const error = new Error("Please enter correct Filter")
