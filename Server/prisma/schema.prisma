@@ -86,7 +86,6 @@ model Favorite {
 
 model Conversation {
   id        String   @id @default(uuid())
-
   listingId String
   buyerId   String
   sellerId  String

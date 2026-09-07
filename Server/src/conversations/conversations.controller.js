@@ -43,6 +43,7 @@ export async function getMyConversationsController(req, res, next) {
 export async function getConversationMessagesController(req,res, next) {
   try {
     const { conversationId } = req.params;
+    console.log(conversationId);
 
     const { page = 1, limit = 50 } = req.query;
 

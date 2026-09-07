@@ -16,12 +16,12 @@ export async function createConversationService(userId, listingId){
     })
     if(!listing){
         const error =  new Error("Listing Not Found")
-        error.StatusCode = 404
+        error.statusCode = 404
         throw error
     }
     if(listing.sellerId == userId){
         const error = new Error("You can not create Connection With yourself")
-        error.StatusCode(200)
+        error.statusCode = 403
         throw error
     }
     const existConversation = await prisma.Conversation.findUnique({

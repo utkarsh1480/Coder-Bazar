@@ -20,7 +20,7 @@ favrouteRouter.post('/:listingId',requireAuth, createfavouriteController)
  * @access public
  */
 
-favrouteRouter.delete('/:favouriteId', deleteFavouriteController)
+favrouteRouter.delete('/:favouriteId',requireAuth, deleteFavouriteController)
 
 /**
  * @route /api/favourite/:favouriteId

@@ -16,6 +16,7 @@ export const createListingSchema = z.object({
   price: z
     .coerce
     .number()
+    .finite("Price must be a valid number")
     .positive("Price must be greater than 0"),
 
   city: z
@@ -27,9 +28,11 @@ export const createListingSchema = z.object({
   categoryId: z
     .string()
     .uuid("Invalid category ID"),
-});
+}).strict();
 
-export const updateListingSchema = z.object({
+
+export const updateListingSchema = z
+  .object({
     title: z
       .string()
       .trim()
@@ -46,6 +49,7 @@ export const updateListingSchema = z.object({
     price: z
       .coerce
       .number()
+      .finite("Price must be a valid number")
       .positive("Price must be greater than 0")
       .optional(),
 
@@ -61,6 +65,7 @@ export const updateListingSchema = z.object({
       .uuid("Invalid category ID")
       .optional(),
   })
+  .strict()
   .refine(
     (data) => Object.keys(data).length > 0,
     {
@@ -68,9 +73,14 @@ export const updateListingSchema = z.object({
     }
   );
 
+
 export const filterListingSchema = z
   .object({
-    search: z.string().trim().optional(),
+    search: z
+      .string()
+      .trim()
+      .max(100, "Search query is too long")
+      .optional(),
 
     categoryId: z
       .string()
@@ -80,17 +90,20 @@ export const filterListingSchema = z
     city: z
       .string()
       .trim()
+      .max(100, "City is too long")
       .optional(),
 
     minPrice: z
       .coerce
       .number()
+      .finite()
       .nonnegative()
       .optional(),
 
     maxPrice: z
       .coerce
       .number()
+      .finite()
       .nonnegative()
       .optional(),
 
@@ -103,6 +116,7 @@ export const filterListingSchema = z
       ])
       .default("latest"),
   })
+  .strict()
   .refine(
     (data) =>
       data.minPrice === undefined ||
@@ -113,17 +127,19 @@ export const filterListingSchema = z
       path: ["minPrice"],
     }
   );
- export const paginationValidation = z.object({
-page: z.coerce
-  .number()
-  .int()
-  .min(1, "Page must be at least 1")
-  .default(1),
 
-limit: z.coerce
-  .number()
-  .int()
-  .min(1, "Limit must be at least 1")
-  .max(100, "Limit cannot exceed 100")
-  .default(10),
- })
+
+export const paginationValidation = z.object({
+  page: z.coerce
+    .number()
+    .int()
+    .min(1, "Page must be at least 1")
+    .default(1),
+
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1, "Limit must be at least 1")
+    .max(100, "Limit cannot exceed 100")
+    .default(10),
+});

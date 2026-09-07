@@ -106,11 +106,9 @@ export async function getListingByIdService(listingId){
 }
     })
     if (!listing) {
-    throw new Error(
-      "Listing not found",
-      404,
-      "LISTING_NOT_FOUND"
-    );
+   const error = new Error("Listing not found");
+  error.statusCode = 404;
+  throw error;
 }
 
     return listing
@@ -130,7 +128,7 @@ export async function updateListingService(listingId, userId, data) {
   }
 
   if (listing.sellerId !== userId) {
-    const error =  new AppError(
+    const error =  new Error(
       "You are not allowed to update this listing",
       "FORBIDDEN"
     );
@@ -194,7 +192,7 @@ export async function deleteListingService(listingId, userId){
   }
 
   if (listing.sellerId !== userId) {
-    const error =  new AppError(
+    const error =  new Error(
       "You are not allowed to delete this listing"
     );
     error.statusCode = 403
@@ -221,7 +219,6 @@ export async function filterListingService(filter ={}, page, limit){
     maxPrice,
     sort = "latest",
 } = filter;
-console.log(limit);
 const skip = (page-1)*limit;
 const where = {}
 if (search) {

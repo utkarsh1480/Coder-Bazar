@@ -3,8 +3,7 @@ import { verifyAccessToken } from "../utils/jwt.js";
 export function requireAuth(req, res, next) {
     try {
         const token = req.cookies?.token;
-        console.log(token)
-
+ 
         if (!token) {
             const error = new Error("Authentication required");
             error.statusCode = 401;

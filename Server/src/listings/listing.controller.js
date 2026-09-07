@@ -1,4 +1,4 @@
-import { success } from 'zod';
+
 import { createListingService ,
      getAllListingsService, 
      getListingByIdService,
@@ -15,7 +15,7 @@ export async function createListing(req, res, next) {
         const result = createListingSchema.safeParse(req.body);
 
         if (!result.success) {
-            return res.status(400).json({
+            return res.status(404).json({
                 success: false,
                 message: "Validation failed",
                 errors: result.error.issues.map((issue) => ({
@@ -119,8 +119,8 @@ export async function filterListingController(req,res,next){
     try {
 const result = filterListingSchema.safeParse(req.query);
 
-const page = Number(req.query.page) || 2;
-const limit = Number(req.query.limit) || 10;
+const page = req.query.page || 1;
+const limit = req.query.limit || 10;
 const paginationresult = paginationValidation.safeParse({page, limit});
 
 if(!paginationresult.success){
