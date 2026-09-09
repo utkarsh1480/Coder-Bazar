@@ -45,7 +45,7 @@ listingRouter.get('/:id', getListingById)
  * @acess public
  */
 
-listingRouter.patch('/:id', requireAuth ,updateListingController)
+listingRouter.patch('/:id', requireAuth ,updateListingController);
 
 
 /**
