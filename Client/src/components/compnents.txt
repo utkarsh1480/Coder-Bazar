@@ -1,0 +1,7 @@
+1: input
+2 Button
+3 comment text area
+4 protected component
+5 errorMessage
+6 modal - : popup Message lets suppose you delete listin : are you sure 
+7 loader

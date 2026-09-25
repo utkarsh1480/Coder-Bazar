@@ -5,7 +5,8 @@ import { registerChatSocket } from "./chat.socket.js";
 export function initializeSocket(server) {
   const io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: "http://localhost:5173",
+      credentials: true
     },
   });
 

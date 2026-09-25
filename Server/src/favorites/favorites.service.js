@@ -73,7 +73,7 @@ await prisma.favorite.delete({
 }
 
 export async function getFavouriteService( userId) {
-  const favourite = await prisma.Favorite.findFirst({
+  const favourite = await prisma.Favorite.findMany({
     where: {
       userId: userId,
     },

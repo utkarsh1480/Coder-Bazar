@@ -233,58 +233,154 @@ console.log("Recipient room:", recipientRoom);
     );
 
 
-    // =========================================
-    // LEAVE CONVERSATION
-    // =========================================
+   // =========================================
+// LEAVE CONVERSATION
+// =========================================
 
-    socket.on(
-        "leave_conversation",
-        async ({ conversationId }, callback) => {
-
-            try {
-
-                if (!conversationId) {
-                    return callback({
-                        success: false,
-                        message: "Conversation ID is required"
-                    });
-                }
-
-                const ROOM = `conversation_${conversationId}`;
-
-                socket.leave(ROOM);
-
-
-                // Clear active conversation
-                if (
-                    socket.activeConversationId === conversationId
-                ) {
-                    socket.activeConversationId = null;
-                }
-
-
-                console.log(
-                    `User ${socket.userId} left room ${ROOM}`
-                );
-
-
-                return callback({
-                    success: true,
-                    message: `Left conversation ${conversationId}`
-                });
-
-            } catch (error) {
-
-                console.log(
-                    "Error leaving conversation:",
-                    error.message
-                );
-
-                return callback({
+socket.on(
+    "leave_conversation",
+    async ({ conversationId }, callback) => {
+        try {
+            if (!conversationId) {
+                return callback?.({
                     success: false,
-                    message: "An error occurred while leaving the conversation"
+                    message: "Conversation ID is required",
                 });
             }
+
+            const ROOM =
+                `conversation_${conversationId}`;
+
+            socket.leave(ROOM);
+
+            // Clear active conversation
+            if (
+                socket.activeConversationId ===
+                conversationId
+            ) {
+                socket.activeConversationId = null;
+            }
+
+            console.log(
+                `User ${socket.userId} left room ${ROOM}`
+            );
+
+            return callback?.({
+                success: true,
+                message:
+                    `Left conversation ${conversationId}`,
+            });
+
+        } catch (error) {
+            console.error(
+                "Error leaving conversation:",
+                error
+            );
+
+            return callback?.({
+                success: false,
+                message:
+                    "An error occurred while leaving the conversation",
+            });
         }
-    );
+    }
+);
+
+
+// =========================================
+// TYPING START
+// =========================================
+
+socket.on(
+    "typing_start",
+    ({ conversationId } = {}) => {
+        if (!conversationId) {
+            return;
+        }
+
+        const ROOM =
+            `conversation_${conversationId}`;
+
+        socket.to(ROOM).emit(
+            "user_typing",
+            {
+                conversationId,
+                userId: socket.userId,
+            }
+        );
+    }
+);
+
+
+// =========================================
+// TYPING STOP
+// =========================================
+
+socket.on(
+    "typing_stop",
+    ({ conversationId } = {}) => {
+        if (!conversationId) {
+            return;
+        }
+
+        const ROOM =
+            `conversation_${conversationId}`;
+
+        socket.to(ROOM).emit(
+            "user_stopped_typing",
+            {
+                conversationId,
+                userId: socket.userId,
+            }
+        );
+    }
+);
+    // =========================================
+// TYPING START
+// =========================================
+
+socket.on(
+    "typing_start",
+    ({ conversationId }) => {
+        if (!conversationId) {
+            return;
+        }
+
+        const ROOM =
+            `conversation_${conversationId}`;
+
+        socket.to(ROOM).emit(
+            "user_typing",
+            {
+                conversationId,
+                userId: socket.userId,
+            }
+        );
+    }
+);
+
+
+// =========================================
+// TYPING STOP
+// =========================================
+
+socket.on(
+    "typing_stop",
+    ({ conversationId }) => {
+        if (!conversationId) {
+            return;
+        }
+
+        const ROOM =
+            `conversation_${conversationId}`;
+
+        socket.to(ROOM).emit(
+            "user_stopped_typing",
+            {
+                conversationId,
+                userId: socket.userId,
+            }
+        );
+    }
+);
 }

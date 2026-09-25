@@ -1,7 +1,7 @@
 
 import express from 'express'
 import {getAllCategory} from './category.controller.js'
-import {requireAuth} from '../middlewares/auth.middleware.js'
+
 
 const categoryRouter = express.Router();
 
@@ -12,7 +12,7 @@ const categoryRouter = express.Router();
   * @access public
   */
 
-categoryRouter.get('/',requireAuth, getAllCategory);
+categoryRouter.get('/', getAllCategory);
 
 
 

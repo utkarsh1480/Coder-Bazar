@@ -18,6 +18,8 @@ model User {
   avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  city      String?
+  phone     String?
 
   listings  Listing[]
   favorites Favorite[]
@@ -85,7 +87,7 @@ model Favorite {
 }
 
 model Conversation {
-  id        String   @id @default(uuid())
+  id        String @id @default(uuid())
   listingId String
   buyerId   String
   sellerId  String
@@ -114,7 +116,7 @@ model Message {
   content        String
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 

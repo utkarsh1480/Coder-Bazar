@@ -3,7 +3,7 @@ import prisma from '../lib/prisma.js'
 
 export async function updatUserProfileService(userId, data){
     console.log("YES", userId)
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
         where : {
             id : userId
         }
@@ -35,7 +35,7 @@ export async function updatUserProfileService(userId, data){
 
 export async function getPublicUserProfileService(userId){
     
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
         where : {
             id : userId
         },
@@ -43,14 +43,19 @@ export async function getPublicUserProfileService(userId){
             id : true,
             name : true,
             avatar : true,
-            createdAt : true
+            createdAt : true,
+            email : true,
+            // city : true,
+            // phone : true
+        
 
         }
     })
 
+
     if(!user){
         const error = new Error("User Nof Found");
-        error.statusCode(404)
+        error.statusCode = 404;
         throw error
     }
 

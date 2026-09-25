@@ -2,7 +2,7 @@ import express from 'express'
 import authRouter from '../auth/auth.routes.js'
 import userRouter from '../user/user.route.js';
 import categoryRouter from '../category/category.route.js';
-import listingRouter from '../listings/listing.route.js';
+import listingRouter from '../listings/listing.routes.js';
 import favrouteRouter from '../favorites/favorites.route.js';
 import conversationRouter from '../conversations/conversations.routes.js';
 
