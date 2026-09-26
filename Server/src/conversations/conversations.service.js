@@ -1,52 +1,53 @@
-import { th } from "zod/v4/locales";
 import prisma from "../lib/prisma.js";
 
-
-
-export async function createConversationService(userId, listingId){
-
-    const listing = await prisma.Listing.findUnique({
-        where : {
-            id : listingId
-        },
-        select: {
+export async function createConversationService(userId, listingId) {
+  const listing = await prisma.Listing.findUnique({
+    where: {
+      id: listingId,
+    },
+    select: {
       id: true,
       sellerId: true,
     },
-    })
-    if(!listing){
-        const error =  new Error("Listing Not Found")
-        error.statusCode = 404
-        throw error
-    }
-    if(listing.sellerId == userId){
-        const error = new Error("You can not create Connection With yourself")
-        error.statusCode = 403
-        throw error
-    }
-    const existConversation = await prisma.Conversation.findUnique({
-        where :{
-         listingId_buyerId_sellerId: {
-      listingId: listingId,
-      buyerId: userId,
-      sellerId: listing.sellerId,
+  });
+
+  if (!listing) {
+    const error = new Error("Listing Not Found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (listing.sellerId == userId) {
+    const error = new Error(
+      "You can not create Connection With yourself"
+    );
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const existConversation = await prisma.Conversation.findUnique({
+    where: {
+      listingId_buyerId_sellerId: {
+        listingId: listingId,
+        buyerId: userId,
+        sellerId: listing.sellerId,
+      },
     },
-        },
-        select:{
-        id: true,
-        listingId: true,
-        buyerId: true,
-        sellerId: true,
-        createdAt: true,
-        }
-    })
+    select: {
+      id: true,
+      listingId: true,
+      buyerId: true,
+      sellerId: true,
+      createdAt: true,
+    },
+  });
 
-    if(existConversation){
-        return existConversation;
-    }
+  if (existConversation) {
+    return existConversation;
+  }
 
-    const conversation = await prisma.Conversation.create({
-        data: {
+  const conversation = await prisma.Conversation.create({
+    data: {
       listingId,
       buyerId: userId,
       sellerId: listing.sellerId,
@@ -58,9 +59,9 @@ export async function createConversationService(userId, listingId){
       sellerId: true,
       createdAt: true,
     },
-    })
+  });
 
-    return conversation;
+  return conversation;
 }
 
 export async function getMyConversationsService(userId) {
@@ -87,6 +88,8 @@ export async function getMyConversationsService(userId) {
       sellerId: true,
       createdAt: true,
       updatedAt: true,
+      buyerLastReadAt: true,
+      sellerLastReadAt: true,
 
       listing: {
         select: {
@@ -115,9 +118,92 @@ export async function getMyConversationsService(userId) {
     },
   });
 
-  return conversations;
+  const conversationsWithUnreadCount = await Promise.all(
+    conversations.map(async (conversation) => {
+      const lastReadAt =
+        conversation.buyerId === userId
+          ? conversation.buyerLastReadAt
+          : conversation.sellerLastReadAt;
+
+      const unreadCount = await prisma.Message.count({
+        where: {
+          conversationId: conversation.id,
+          senderId: {
+            not: userId,
+          },
+          ...(lastReadAt
+            ? {
+                createdAt: {
+                  gt: lastReadAt,
+                },
+              }
+            : {}),
+        },
+      });
+
+      return {
+        ...conversation,
+        unreadCount,
+      };
+    })
+  );
+
+  return conversationsWithUnreadCount;
 }
 
+export async function markConversationAsReadService(
+  userId,
+  conversationId
+) {
+  const conversation = await prisma.Conversation.findFirst({
+    where: {
+      id: conversationId,
+      OR: [
+        {
+          buyerId: userId,
+        },
+        {
+          sellerId: userId,
+        },
+      ],
+    },
+    select: {
+      id: true,
+      buyerId: true,
+      sellerId: true,
+    },
+  });
+
+  if (!conversation) {
+    const error = new Error("Conversation not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const data =
+    conversation.buyerId === userId
+      ? {
+          buyerLastReadAt: new Date(),
+        }
+      : {
+          sellerLastReadAt: new Date(),
+        };
+
+  const updatedConversation =
+    await prisma.Conversation.update({
+      where: {
+        id: conversationId,
+      },
+      data,
+      select: {
+        id: true,
+        buyerLastReadAt: true,
+        sellerLastReadAt: true,
+      },
+    });
+
+  return updatedConversation;
+}
 
 export async function getConversationMessagesService(
   userId,
@@ -129,17 +215,19 @@ export async function getConversationMessagesService(
   limit = Number(limit);
 
   if (!Number.isInteger(page) || page < 1) {
-    const error =  new Error(
-      "Page must be a positive number");
-    error.StatusCode= 400
-    throw error
+    const error = new Error(
+      "Page must be a positive number"
+    );
+    error.statusCode = 400;
+    throw error;
   }
 
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
-    const error =  new Error(
-      "Limit must be between 1 and 100");
-    error.StatusCode = 400
-    throw error
+    const error = new Error(
+      "Limit must be between 1 and 100"
+    );
+    error.statusCode = 400;
+    throw error;
   }
 
   const skip = (page - 1) * limit;
@@ -147,7 +235,6 @@ export async function getConversationMessagesService(
   const conversation = await prisma.Conversation.findFirst({
     where: {
       id: conversationId,
-
       OR: [
         {
           buyerId: userId,
@@ -164,10 +251,11 @@ export async function getConversationMessagesService(
   });
 
   if (!conversation) {
-    const error =  new Error("Conversation not found");
-    error.StatusCode = 404
-    throw error
+    const error = new Error("Conversation not found");
+    error.statusCode = 404;
+    throw error;
   }
+
   const totalMessages = await prisma.Message.count({
     where: {
       conversationId,
@@ -225,10 +313,11 @@ export async function sendMessageService(
   content
 ) {
   if (!content || !content.trim()) {
-    const error =  new Error(
-      "Message cannot be empty",);
-    error.statusCode = 400
-    throw error
+    const error = new Error(
+      "Message cannot be empty"
+    );
+    error.statusCode = 400;
+    throw error;
   }
 
   const cleanContent = content.trim();
@@ -251,12 +340,11 @@ export async function sendMessageService(
   });
 
   if (!conversation) {
-    const error =  new Error("Conversation not found",);
-    error.statusCode = 404
-    throw error
+    const error = new Error("Conversation not found");
+    error.statusCode = 404;
+    throw error;
   }
 
-  // 3. Create message
   const message = await prisma.Message.create({
     data: {
       conversationId,

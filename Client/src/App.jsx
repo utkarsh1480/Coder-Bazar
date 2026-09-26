@@ -2,10 +2,11 @@ import React,{ useEffect } from 'react'
 import './App.css'
 
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import AppRoutes from "./routes/AppRoutes.jsx";
 import authService from "./service/auth.service.js";
+import socket from "./service/socket.js";
 
 import {
     login,
@@ -14,6 +15,7 @@ import {
 
 function App() {
     const dispatch = useDispatch();
+    const user = useSelector((state) => state.auth.user);
 
     useEffect(() => {
         let mounted = true;
@@ -46,6 +48,18 @@ function App() {
             mounted = false;
         };
     }, [dispatch]);
+
+    useEffect(() => {
+        if (!user?.id) return;
+
+        if (!socket.connected) {
+            socket.connect();
+        }
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [user?.id]);
 
     return <AppRoutes />;
 }

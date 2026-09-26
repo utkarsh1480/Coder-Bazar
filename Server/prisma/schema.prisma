@@ -91,6 +91,8 @@ model Conversation {
   listingId String
   buyerId   String
   sellerId  String
+  buyerLastReadAt  DateTime?
+  sellerLastReadAt DateTime?
 
   listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 

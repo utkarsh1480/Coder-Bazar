@@ -2,7 +2,8 @@ import express from 'express'
 import {createConversationController,
      getMyConversationsController, 
      getConversationMessagesController,
-     sendMessageController
+     sendMessageController,
+       markConversationAsReadController,
     } from './conversations.controller.js'
 import { requireAuth } from '../middlewares/auth.middleware.js'
 import authRouter from '../auth/auth.routes.js';
@@ -37,5 +38,11 @@ conversationRouter.get( "/:conversationId/messages", requireAuth,getConversation
  */
 
 conversationRouter.post("/:conversationId/messages",requireAuth,sendMessageController);
+
+conversationRouter.patch(
+  "/:conversationId/read",
+  requireAuth,
+  markConversationAsReadController
+);
 
 export default conversationRouter

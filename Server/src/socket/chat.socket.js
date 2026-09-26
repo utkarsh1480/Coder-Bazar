@@ -2,20 +2,19 @@ import prisma from "../lib/prisma.js";
 import { sendMessageService } from "../conversations/conversations.service.js";
 
 export function registerChatSocket(io, socket) {
-
     // =========================================
     // JOIN CONVERSATION
     // =========================================
 
     socket.on("join_conversation", async ({ conversationId }, callback) => {
         try {
-
             if (!conversationId) {
                 return callback({
                     success: false,
-                    message: "Conversation ID is required"
+                    message: "Conversation ID is required",
                 });
             }
+
             const conversation = await prisma.Conversation.findFirst({
                 where: {
                     id: conversationId,
@@ -34,7 +33,7 @@ export function registerChatSocket(io, socket) {
             if (!conversation) {
                 return callback({
                     success: false,
-                    message: "Conversation not found"
+                    message: "Conversation not found",
                 });
             }
 
@@ -42,33 +41,35 @@ export function registerChatSocket(io, socket) {
 
             socket.join(ROOM);
 
-            // Track current conversation
             socket.activeConversationId = conversationId;
 
             console.log(
                 `User ${socket.userId} joined room ${ROOM}`
             );
 
+            console.log(
+                "SOCKET ROOMS AFTER JOIN:",
+                [...socket.rooms]
+            );
+
             return callback({
                 success: true,
                 message: `Joined conversation ${conversationId}`,
-                ROOM
+                room: ROOM,
             });
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Error joining conversation:",
-                error.message
+                error
             );
 
             return callback({
                 success: false,
-                message: "An error occurred while joining the conversation"
+                message:
+                    "An error occurred while joining the conversation",
             });
         }
     });
-
 
     // =========================================
     // SEND MESSAGE
@@ -77,9 +78,7 @@ export function registerChatSocket(io, socket) {
     socket.on(
         "send_message",
         async ({ conversationId, content }, ack) => {
-
             try {
-
                 if (!conversationId) {
                     return ack({
                         success: false,
@@ -94,21 +93,21 @@ export function registerChatSocket(io, socket) {
                     });
                 }
 
-                // Find conversation
-                const conversation = await prisma.Conversation.findFirst({
-                    where: {
-                        id: conversationId,
-                        OR: [
-                            { buyerId: socket.userId },
-                            { sellerId: socket.userId },
-                        ],
-                    },
-                    select: {
-                        id: true,
-                        buyerId: true,
-                        sellerId: true,
-                    },
-                });
+                const conversation =
+                    await prisma.Conversation.findFirst({
+                        where: {
+                            id: conversationId,
+                            OR: [
+                                { buyerId: socket.userId },
+                                { sellerId: socket.userId },
+                            ],
+                        },
+                        select: {
+                            id: true,
+                            buyerId: true,
+                            sellerId: true,
+                        },
+                    });
 
                 if (!conversation) {
                     return ack({
@@ -116,7 +115,6 @@ export function registerChatSocket(io, socket) {
                         message: "Conversation not found",
                     });
                 }
-
 
                 // =========================================
                 // FIND RECIPIENT
@@ -127,9 +125,11 @@ export function registerChatSocket(io, socket) {
                         ? conversation.sellerId
                         : conversation.buyerId;
 
+                console.log("================================");
+                console.log("MESSAGE DELIVERY");
                 console.log("Sender:", socket.userId);
                 console.log("Recipient:", recipientId);
-
+                console.log("Conversation:", conversationId);
 
                 // =========================================
                 // SAVE MESSAGE
@@ -141,72 +141,74 @@ export function registerChatSocket(io, socket) {
                     content
                 );
 
-
-                  // =========================================
-                //Debug Recipient Sockets
+                // =========================================
+                // CONVERSATION ROOM
                 // =========================================
 
-                const recipientRoom = `user_${recipientId}`;
+                const ROOM =
+                    `conversation_${conversationId}`;
 
-console.log("================================");
-console.log("RECIPIENT DEBUG");
-console.log("Recipient ID:", recipientId);
-console.log("Recipient room:", recipientRoom);
+                console.log(
+                    "Conversation room:",
+                    ROOM
+                );
 
                 // =========================================
-                // FIND RECIPIENT SOCKETS
+                // CHECK RECIPIENT SOCKET
                 // =========================================
+
+                const recipientRoom =
+                    `user_${recipientId}`;
 
                 const recipientSockets =
                     await io
-                        .in(`user_${recipientId}`)
+                        .in(recipientRoom)
                         .fetchSockets();
-               
-                        console.log(
-    "Recipient sockets:",
-    recipientSockets.map((s) => ({
-        socketId: s.id,
-        userId: s.userId,
-        activeConversationId: s.activeConversationId,
-    })))
 
                 console.log(
-                    "Recipient sockets:",   
-                    recipientSockets.length
+                    "Recipient sockets:",
+                    recipientSockets.map((clientSocket) => ({
+                        socketId: clientSocket.id,
+                        userId: clientSocket.userId,
+                        activeConversationId:
+                            clientSocket.activeConversationId,
+                    }))
                 );
-
-
-                // =========================================
-                // CHECK ACTIVE CONVERSATION
-                // =========================================
 
                 const recipientIsInConversation =
                     recipientSockets.some(
                         (clientSocket) =>
-                            clientSocket.activeConversationId ===
-                            conversationId
+                            String(
+                                clientSocket.activeConversationId
+                            ) === String(conversationId)
                     );
-
 
                 console.log(
                     "Recipient in conversation:",
                     recipientIsInConversation
                 );
 
+                // Deliver to the conversation and recipient rooms. The
+                // recipient room covers clients that have not joined the
+                // conversation room yet.
+                io.to(ROOM)
+                    .to(recipientRoom)
+                    .emit("new_message", message);
 
                 // =========================================
-                // SEND MESSAGE TO CHAT ROOM
+                // SEND NOTIFICATION IF RECIPIENT
+                // IS NOT INSIDE THE CONVERSATION
                 // =========================================
 
-                const ROOM = `conversation_${conversationId}`;
-                if(recipientIsInConversation){
-                    io.to(ROOM).emit( "new_message",message);
-                } else {
-                 io.to(`user_${recipientId}`).emit("new_notification",message);
-            }
+                if (!recipientIsInConversation) {
+                    io.to(recipientRoom).emit(
+                        "new_notification",
+                        message
+                    );
+                }
 
                 // =========================================
-                // ACK
+                // ACK SENDER
                 // =========================================
 
                 return ack({
@@ -216,9 +218,7 @@ console.log("Recipient room:", recipientRoom);
                         message,
                     },
                 });
-
             } catch (error) {
-
                 console.error(
                     "Send message error:",
                     error
@@ -232,155 +232,102 @@ console.log("Recipient room:", recipientRoom);
         }
     );
 
+    // =========================================
+    // LEAVE CONVERSATION
+    // =========================================
 
-   // =========================================
-// LEAVE CONVERSATION
-// =========================================
+    socket.on(
+        "leave_conversation",
+        async ({ conversationId }, callback) => {
+            try {
+                if (!conversationId) {
+                    return callback?.({
+                        success: false,
+                        message: "Conversation ID is required",
+                    });
+                }
 
-socket.on(
-    "leave_conversation",
-    async ({ conversationId }, callback) => {
-        try {
-            if (!conversationId) {
+                const ROOM =
+                    `conversation_${conversationId}`;
+
+                socket.leave(ROOM);
+
+                if (
+                    socket.activeConversationId ===
+                    conversationId
+                ) {
+                    socket.activeConversationId = null;
+                }
+
+                console.log(
+                    `User ${socket.userId} left room ${ROOM}`
+                );
+
+                return callback?.({
+                    success: true,
+                    message:
+                        `Left conversation ${conversationId}`,
+                });
+            } catch (error) {
+                console.error(
+                    "Error leaving conversation:",
+                    error
+                );
+
                 return callback?.({
                     success: false,
-                    message: "Conversation ID is required",
+                    message:
+                        "An error occurred while leaving the conversation",
                 });
+            }
+        }
+    );
+
+    // =========================================
+    // TYPING START
+    // =========================================
+
+    socket.on(
+        "typing_start",
+        ({ conversationId } = {}) => {
+            if (!conversationId) {
+                return;
             }
 
             const ROOM =
                 `conversation_${conversationId}`;
 
-            socket.leave(ROOM);
-
-            // Clear active conversation
-            if (
-                socket.activeConversationId ===
-                conversationId
-            ) {
-                socket.activeConversationId = null;
-            }
-
-            console.log(
-                `User ${socket.userId} left room ${ROOM}`
+            socket.to(ROOM).emit(
+                "user_typing",
+                {
+                    conversationId,
+                    userId: socket.userId,
+                }
             );
-
-            return callback?.({
-                success: true,
-                message:
-                    `Left conversation ${conversationId}`,
-            });
-
-        } catch (error) {
-            console.error(
-                "Error leaving conversation:",
-                error
-            );
-
-            return callback?.({
-                success: false,
-                message:
-                    "An error occurred while leaving the conversation",
-            });
         }
-    }
-);
+    );
 
-
-// =========================================
-// TYPING START
-// =========================================
-
-socket.on(
-    "typing_start",
-    ({ conversationId } = {}) => {
-        if (!conversationId) {
-            return;
-        }
-
-        const ROOM =
-            `conversation_${conversationId}`;
-
-        socket.to(ROOM).emit(
-            "user_typing",
-            {
-                conversationId,
-                userId: socket.userId,
-            }
-        );
-    }
-);
-
-
-// =========================================
-// TYPING STOP
-// =========================================
-
-socket.on(
-    "typing_stop",
-    ({ conversationId } = {}) => {
-        if (!conversationId) {
-            return;
-        }
-
-        const ROOM =
-            `conversation_${conversationId}`;
-
-        socket.to(ROOM).emit(
-            "user_stopped_typing",
-            {
-                conversationId,
-                userId: socket.userId,
-            }
-        );
-    }
-);
     // =========================================
-// TYPING START
-// =========================================
+    // TYPING STOP
+    // =========================================
 
-socket.on(
-    "typing_start",
-    ({ conversationId }) => {
-        if (!conversationId) {
-            return;
-        }
-
-        const ROOM =
-            `conversation_${conversationId}`;
-
-        socket.to(ROOM).emit(
-            "user_typing",
-            {
-                conversationId,
-                userId: socket.userId,
+    socket.on(
+        "typing_stop",
+        ({ conversationId } = {}) => {
+            if (!conversationId) {
+                return;
             }
-        );
-    }
-);
 
+            const ROOM =
+                `conversation_${conversationId}`;
 
-// =========================================
-// TYPING STOP
-// =========================================
-
-socket.on(
-    "typing_stop",
-    ({ conversationId }) => {
-        if (!conversationId) {
-            return;
+            socket.to(ROOM).emit(
+                "user_stopped_typing",
+                {
+                    conversationId,
+                    userId: socket.userId,
+                }
+            );
         }
-
-        const ROOM =
-            `conversation_${conversationId}`;
-
-        socket.to(ROOM).emit(
-            "user_stopped_typing",
-            {
-                conversationId,
-                userId: socket.userId,
-            }
-        );
-    }
-);
+    );
 }

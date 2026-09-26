@@ -35,14 +35,24 @@ const conversationService = {
   /**
    * Send a message in a conversation
    */
-  sendMessage: async (conversationId, data) => {
+sendMessage: async (conversationId, content) => {
     const response = await apiClient.post(
-      `/conversations/${conversationId}/messages`,
-      data
+        `/conversations/${conversationId}/messages`,
+        {
+            content,
+        }
+    );
+    return response.data;
+},
+
+  markConversationAsRead: async (conversationId) => {
+    const response = await apiClient.patch(
+      `/conversations/${conversationId}/read`
     );
 
     return response.data;
   },
 };
+
 
 export default conversationService;

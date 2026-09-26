@@ -55,7 +55,7 @@ export async function login(req, res, next) {
 
 export async function getMe(req,res,next){
   try{
-    const user = await getCurrentUserService(req)
+    const { user } = await getCurrentUserService(req)
     res.status(200).json({
       success: true,
       data: {
@@ -70,11 +70,7 @@ export async function getMe(req,res,next){
 
 export async function logout(req, res, next) {
     try {
-        res.clearCookie("token", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict"
-        });
+        res.clearCookie("token");
 
         return res.status(200).json({
             success: true,

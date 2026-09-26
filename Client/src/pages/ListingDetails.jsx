@@ -194,7 +194,7 @@ const ListingDetails = () => {
 
         try {
             setMessageLoading(true);
-
+            
             const response =
                 await conversationService.createConversation(
                     listing.id

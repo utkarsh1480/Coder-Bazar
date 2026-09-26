@@ -1,26 +1,29 @@
-import {createConversationService,  
-    getMyConversationsService, 
-    getConversationMessagesService,
-    sendMessageService
-} from './conversations.service.js'
+import {
+  createConversationService,
+  getMyConversationsService,
+  getConversationMessagesService,
+  sendMessageService,
+  markConversationAsReadService,
+} from "./conversations.service.js";
 
+export async function createConversationController(req, res, next) {
+  try {
+    const listingId = req.params.id;
 
-export async function createConversationController(req,res,next){
-    try {
-        const listingId = req.params.id
-       const conversation = await createConversationService(
-        req.user.sub,
-        listingId
-       ) 
-       res.status(201).json({
-        "status" : true,
-        data : {
-            conversation
-        }
-       })
-    } catch (error) {
-        next(error)
-    }
+    const conversation = await createConversationService(
+      req.user.sub,
+      listingId
+    );
+
+    res.status(201).json({
+      status: true,
+      data: {
+        conversation,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function getMyConversationsController(req, res, next) {
@@ -40,10 +43,13 @@ export async function getMyConversationsController(req, res, next) {
   }
 }
 
-export async function getConversationMessagesController(req,res, next) {
+export async function getConversationMessagesController(
+  req,
+  res,
+  next
+) {
   try {
     const { conversationId } = req.params;
-    console.log(conversationId);
 
     const { page = 1, limit = 50 } = req.query;
 
@@ -78,6 +84,30 @@ export async function sendMessageController(req, res, next) {
       status: "success",
       data: {
         message,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function markConversationAsReadController(
+  req,
+  res,
+  next
+) {
+  try {
+    const { conversationId } = req.params;
+
+    const conversation = await markConversationAsReadService(
+      req.user.sub,
+      conversationId
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        conversation,
       },
     });
   } catch (error) {

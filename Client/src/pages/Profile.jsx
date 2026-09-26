@@ -29,7 +29,7 @@ const Profile = () => {
     const [saving, setSaving] = useState(false);
     const {showToast} = useToast();
 
-    const id = authUser?.user.id;
+    const id = authUser?.id;
 
     useEffect(() => {
         const fetchProfile = async () => {
