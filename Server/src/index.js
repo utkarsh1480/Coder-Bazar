@@ -15,7 +15,9 @@ const legacyImageDirectory = fileURLToPath(new URL("../uploads/", import.meta.ur
 
 app.use(helmet());
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5174",
+    "https://coder-bazar.vercel.app/api"
+  ],
   credentials: true
 }));
 app.use(express.json({limit: '100kb'}));

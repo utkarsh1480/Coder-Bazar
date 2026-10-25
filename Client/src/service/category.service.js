@@ -1,5 +1,5 @@
 
-import apiClient from "./apiClient";
+import apiClient from "./apiclient.js";
 
 
 const categoryService = {
@@ -14,6 +14,5 @@ const categoryService = {
     }
 }
 export default categoryService
-
 
 

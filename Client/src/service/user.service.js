@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient from "./apiclient.js";
 
 const userService = {
   getMe: async (id) => {

@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient from "./apiclient.js";
 
 const conversationService = {
   /**
@@ -35,15 +35,16 @@ const conversationService = {
   /**
    * Send a message in a conversation
    */
-sendMessage: async (conversationId, content) => {
+  sendMessage: async (conversationId, content) => {
     const response = await apiClient.post(
-        `/conversations/${conversationId}/messages`,
-        {
-            content,
-        }
+      `/conversations/${conversationId}/messages`,
+      {
+        content,
+      }
     );
+
     return response.data;
-},
+  },
 
   markConversationAsRead: async (conversationId) => {
     const response = await apiClient.patch(
