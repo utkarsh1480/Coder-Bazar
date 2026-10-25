@@ -17,7 +17,7 @@ app.use(helmet());
 app.use(cors({
   origin: ["http://localhost:5174",
     "https://coder-bazar.vercel.app/api",
-    "https://coder-bazar-bqpq-ochre.vercel.app/"
+    "https://coder-bazar-bqpq-ochre.vercel.app"
   ],
   credentials: true
 }));
