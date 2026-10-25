@@ -1,37 +1,22 @@
 import apiClient from './apiclient.js';
 
 const authService = {
-    login : async (Credentials) => {
-        try {
-            const response = await apiClient.post('/auth/login', Credentials);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-    },
-    register : async (userData) => {
-        try {
-            const response = await apiClient.post('/auth/register', userData);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-    },
-    logout : async () => {
-        try {
-            const response = await apiClient.post('/auth/logout');
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-    },
-   getMe: async () => {
-    try{
+  login: async (credentials) => {
+    const response = await apiClient.post("/auth/login", credentials);
+    return response.data;
+  },
+  register: async (userData) => {
+    const response = await apiClient.post("/auth/register", userData);
+    return response.data;
+  },
+  logout: async () => {
+    const response = await apiClient.post("/auth/logout");
+    return response.data;
+  },
+  getMe: async () => {
     const response = await apiClient.get("/auth/get-Me");
     return response.data;
-    }catch(error){
-        throw error
-    }
   },
-}
+};
+
 export default authService;
