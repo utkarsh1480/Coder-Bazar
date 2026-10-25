@@ -21,9 +21,10 @@ model User {
   city      String?
   phone     String?
 
-  listings  Listing[]
-  favorites Favorite[]
-  messages  Message[]
+  listings     Listing[]
+  favorites    Favorite[]
+  messages     Message[]
+  storedImages StoredImage[]
 
   buyerConversations  Conversation[] @relation("BuyerConversations")
   sellerConversations Conversation[] @relation("SellerConversations")
@@ -70,6 +71,18 @@ model Image {
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+}
+
+model StoredImage {
+  id          String   @id @default(uuid())
+  ownerId     String
+  contentType String
+  data        Bytes
+  createdAt   DateTime @default(now())
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
 }
 
 model Favorite {

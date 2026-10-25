@@ -5,6 +5,7 @@ import categoryRouter from '../category/category.route.js';
 import listingRouter from '../listings/listing.routes.js';
 import favrouteRouter from '../favorites/favorites.route.js';
 import conversationRouter from '../conversations/conversations.routes.js';
+import storageRouter from '../storage/storage.routes.js';
 
 const router = express.Router();
 
@@ -57,5 +58,6 @@ const router = express.Router();
  */
 
  router.use('/conversations', conversationRouter)
+ router.use('/storage', storageRouter)
 
 export default router;

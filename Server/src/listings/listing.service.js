@@ -1,6 +1,7 @@
 import { describe } from "zod/v4/core";
 import prisma from "../lib/prisma.js";
 import { date } from "zod";
+import { getListingImageUrls } from "../storage/storage.service.js";
 
 
 export async function createListingService(userId, data){
@@ -16,6 +17,7 @@ export async function createListingService(userId, data){
         throw error
     }
 
+    const imageUrls = await getListingImageUrls(userId, data.imageKeys);
     const listing = await prisma.Listing.create({
         data :{
             title : data.title,
@@ -23,7 +25,10 @@ export async function createListingService(userId, data){
             price : data.price,
             city : data.city,
             categoryId : data.categoryId,
-            sellerId : userId
+            sellerId : userId,
+            images: {
+              create: imageUrls.map((url) => ({ url })),
+            },
 
         },
         select: {
@@ -36,6 +41,11 @@ export async function createListingService(userId, data){
       categoryId: true,
       createdAt: true,
       updatedAt: true,
+      images: {
+        select: {
+          url: true,
+        },
+      },
     },
     })
     
@@ -58,6 +68,11 @@ export async function getAllListingsService(){
             city : true,
             createdAt : true,
             updatedAt : true,
+            images: {
+              select: {
+                url: true,
+              },
+            },
         
         seller: {
         select: {
@@ -90,6 +105,11 @@ export async function getListingByIdService(listingId){
             city : true,
             createdAt : true,
             updatedAt : true,
+            images: {
+              select: {
+                url: true,
+              },
+            },
         
         seller: {
         select: {
@@ -292,6 +312,11 @@ const listing = await prisma.Listing.findMany({
         description : true,
         price : true,
         city : true,
+        images: {
+          select: {
+            url: true,
+          },
+        },
         seller :{
             select :{
             id : true,
@@ -308,7 +333,4 @@ const listing = await prisma.Listing.findMany({
 })
 return listing
 }
-
-
-
 

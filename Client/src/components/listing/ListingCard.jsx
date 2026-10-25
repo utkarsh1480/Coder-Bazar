@@ -1,15 +1,20 @@
 import { Link } from "react-router-dom";
+import { resolveImageUrl } from "../../utils/imageUrl.js";
 
 const ListingCard = ({ listing }) => {
+    const imageUrl = resolveImageUrl(
+        listing.images?.[0]?.url || listing.imageUrl
+    );
+
     return (
         <Link
             to={`/listings/${listing.id}`}
             className="group block overflow-hidden rounded-[1.5rem] border border-black/[0.08] bg-white transition duration-300 hover:-translate-y-1 hover:border-black/[0.14] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
         >
             <div className="relative aspect-[4/5] overflow-hidden bg-[#EDECE7]">
-                {listing.imageUrl ? (
+                {imageUrl ? (
                     <img
-                        src={listing.imageUrl}
+                        src={imageUrl}
                         alt={listing.title}
                         className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
                     />

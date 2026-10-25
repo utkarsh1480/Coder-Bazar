@@ -8,6 +8,7 @@ import { useToast } from "../context/ToastContext.jsx";
 
 import listingService from "../service/listing.service.js";
 import categoryService from "../service/category.service.js";
+import imageUploadService from "../service/imageUpload.service.js";
 
 import Input from "../components/Input";
 import Select from "../components/Select";
@@ -40,6 +41,8 @@ const createListingSchema = z.object({
         .string()
         .min(1, "Please select a category"),
 });
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 const CreateListing = () => {
     const navigate = useNavigate();
@@ -127,12 +130,12 @@ const CreateListing = () => {
                 "image/jpeg",
                 "image/png",
                 "image/webp",
-            ].includes(file.type)
+            ].includes(file.type) && file.size <= MAX_IMAGE_SIZE
         );
 
         if (validFiles.length !== files.length) {
             setImageError(
-                "Only JPG, PNG, and WEBP images are supported."
+                "Images must be JPG, PNG, or WEBP and no larger than 5 MB."
             );
         }
 
@@ -181,8 +184,14 @@ const CreateListing = () => {
         try {
             setSubmitError("");
 
+            const imageKeys = images.length
+                ? await imageUploadService.uploadImages(images)
+                : [];
             const response =
-                await listingService.createListing(data);
+                await listingService.createListing({
+                    ...data,
+                    imageKeys,
+                });
 
             const listingId =
                 response?.data?.listing?.id;

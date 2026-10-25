@@ -14,6 +14,7 @@ import {
     Modal,
 } from "../components/index.js";
 
+import { resolveImageUrl } from "../utils/imageUrl.js";
 import { getTestListingImages } from "../utils/testListingImages.js";
 
 const ListingDetails = () => {
@@ -73,9 +74,9 @@ const ListingDetails = () => {
             sources.unshift(listing.imageUrl);
         }
 
-        const realImages = [...new Set(sources)];
+        const realImages = [...new Set(sources)].map(resolveImageUrl);
 
-        if (realImages.length > 1) {
+        if (realImages.length > 0) {
             return realImages;
         }
 

@@ -28,6 +28,11 @@ export const createListingSchema = z.object({
   categoryId: z
     .string()
     .uuid("Invalid category ID"),
+
+  imageKeys: z
+    .array(z.string().min(1))
+    .max(6, "A listing can have at most 6 images")
+    .optional(),
 }).strict();
 
 
