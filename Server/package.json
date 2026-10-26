@@ -10,8 +10,7 @@
     "start": "node --watch src/server.js",
     "test": "node src/server.js",
     "build": "prisma generate",
-    "start": "node src/server.js",
-     "start:socket": "node src/socketServer.js"
+    "start:socket": "node src/socketServer.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",

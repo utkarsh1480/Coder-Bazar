@@ -8,6 +8,6 @@ initializeSocket(server);
 
 const PORT = process.env.PORT || 4600;
 
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`Socket.IO server running on port ${PORT}`);
 });
