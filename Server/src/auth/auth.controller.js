@@ -42,7 +42,12 @@ export async function login(req, res, next) {
 
     const data = await loginUserService(req.body ?? {});
 
-    res.cookie("token", data.accessToken)
+    res.cookie("token", data.accessToken,{
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  path: "/",
+} )
     res.status(200).json({
       success: true,
       data: data,
