@@ -45,8 +45,9 @@ export async function login(req, res, next) {
     res.cookie("token", data.accessToken,{
   httpOnly: true,
   secure: true,
-  sameSite: "none",
-  path: "/",
+   sameSite: "lax",
+   domain: "eco-loom.store",
+    path: "/",
 } )
     res.status(200).json({
       success: true,

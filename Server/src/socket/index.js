@@ -6,9 +6,9 @@ export function initializeSocket(server) {
   const io = new Server(server, {
     cors: {
       origin: [
+        "https://www.eco-loom.store",
+        "https://eco-loom.store",
         "http://localhost:5173",
-      "https://eco-loom.store",
-      "https://www.eco-loom.store",
     ],
     methods: ["GET", "POST"],
       credentials: true
