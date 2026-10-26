@@ -14,15 +14,22 @@ const legacyImageDirectory = fileURLToPath(new URL("../uploads/", import.meta.ur
 
 
 app.use(helmet());
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://eco-loom.store/",
-    "https://www.eco-loom.store/",
+const allowedOrigins = [
+  "http://localhost:5174",
+  "https://coder-bazar.vercel.app",
+  "https://coder-bazar-bqpq-bciqbvfv8-utkarshs-projects-5bbbe440.vercel.app",
+  "https://coder-bazar-bqpq-ochre.vercel.app"
+];
 
-  ],
-  credentials: true
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked origin: ${origin}`));
+    }
+  },
+  credentials: true,
 }));
 app.use(express.json({limit: '100kb'}));
 app.use(express.json({urlencoded: true}))
