@@ -15,9 +15,12 @@ const legacyImageDirectory = fileURLToPath(new URL("../uploads/", import.meta.ur
 
 app.use(helmet());
 app.use(cors({
-  origin: ["http://localhost:5174",
-    "https://coder-bazar.vercel.app/api",
-     "https://www.eco-loom.store"
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://eco-loom.store",
+    "https://www.eco-loom.store"
+    
   ],
   credentials: true
 }));
