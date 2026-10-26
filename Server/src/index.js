@@ -18,9 +18,9 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "http://localhost:5174",
-    "https://eco-loom.store",
-    "https://www.eco-loom.store"
-    
+    "https://eco-loom.store/",
+    "https://www.eco-loom.store/",
+
   ],
   credentials: true
 }));
