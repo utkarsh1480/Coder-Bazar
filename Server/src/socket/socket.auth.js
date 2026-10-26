@@ -23,10 +23,7 @@ async function authenticateSocket(socket, next) {
         const cookieHeader =
             socket.handshake.headers.cookie;
 
-        console.log(
-            "SOCKET COOKIE:",
-            cookieHeader
-        );
+       
 
         const token = getCookie(
             cookieHeader,
